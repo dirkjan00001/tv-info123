@@ -35,7 +35,13 @@ class info123:
         # u'soort': u'Nieuwsbulletin',
         # u'titel': u'Journaal'}]
         channel_info = self.data[channel]
-        for program in channel_info:
+    
+        if isinstance(channel_info, dict):
+            channel_info_list = channel_info.values()
+        else:
+            channel_info_list = channel_info
+
+        for program in channel_info_list:
             datetime_start = datetime.datetime.strptime(program['datum_start'], "%Y-%m-%d %H:%M:%S")
             datetime_stop  = datetime.datetime.strptime(program['datum_end'],   "%Y-%m-%d %H:%M:%S")
             if (datetime_start <= datetime_prog and datetime_prog <= datetime_stop):
