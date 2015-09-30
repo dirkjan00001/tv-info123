@@ -9,7 +9,6 @@ except ImportError:
 
 import json
 import datetime
-import pprint       # For debugging
 
 def log(s):
     print(s)
@@ -17,8 +16,7 @@ def log(s):
 class info123:
     def __init__(self, channelstring = "1,2,3"):
         self.data = []
-        self.json_url = "http://www.tvgids.nl/json/lists/programs.php?channels=" + channelstring
-        self.update()
+        self.json_url = "http://www.tvgids.nl/json/lists/programs.php?channels=%s" %channelstring
 
     def update(self):
         response = urlopen(self.json_url)     #TODO create something with a timeout
@@ -36,22 +34,35 @@ class info123:
         # u'kijkwijzer': u'',
         # u'soort': u'Nieuwsbulletin',
         # u'titel': u'Journaal'}]
-
-        channel_info = self.data[channel]       #TODO check if channel exists
+        channel_info = self.data[channel]
         for program in channel_info:
             datetime_start = datetime.datetime.strptime(program['datum_start'], "%Y-%m-%d %H:%M:%S")
             datetime_stop  = datetime.datetime.strptime(program['datum_end'],   "%Y-%m-%d %H:%M:%S")
             if (datetime_start <= datetime_prog and datetime_prog <= datetime_stop):
                 return program
-        raise Exception('program', 'not found!')
+        raise Exception('No program found')
+
+def get_program_title(channel):
+    title = ""
+    try:
+        prog = tv.get_current_program(channel)
+        title = prog['titel']
+        # log("Nu op nederland 1: " + prog['titel'] + "\nvan: " + prog['datum_start'] + "\ntot: " + prog['datum_end'])
+    except KeyError:
+        log("Channel %s not found" %channel)
+    except  Exception as e:
+        log("Error obtaining the program on channel %s. %s" % (channel, e))
+    return title
 
 
-
-    def log_data(self):
-        pp = pprint.PrettyPrinter(indent=4)
-        log(pp.pprint(self.data['1']))
 
 tv = info123()
-# tv.log_data()
-prog = tv.get_current_program("1")
-print("nu op nederland 1: " + prog['titel'] + "\nvan: " + prog['datum_start'] + "\ntot: " + prog['datum_end'])
+
+try:
+    tv.update()
+except Exception as e:
+    log("Unable to connect to the server. %s" %e)
+
+print(get_program_title("1"))
+print(get_program_title("2"))
+print(get_program_title("3"))
