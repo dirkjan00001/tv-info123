@@ -1,17 +1,11 @@
 #!/usr/bin/env python
 
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
-
 import json
 import datetime
-
-def log(s):
-    print(s)
+try:
+    from urllib.request import urlopen      # For Python 3.0 and later
+except ImportError:
+    from urllib2 import urlopen             # Fall back to Python 2's urllib2
 
 class info123:
     def __init__(self, channelstring = "1,2,3"):
@@ -35,7 +29,7 @@ class info123:
         # u'soort': u'Nieuwsbulletin',
         # u'titel': u'Journaal'}]
         channel_info = self.data[channel]
-    
+
         if isinstance(channel_info, dict):
             channel_info_list = channel_info.values()
         else:
@@ -47,28 +41,3 @@ class info123:
             if (datetime_start <= datetime_prog and datetime_prog <= datetime_stop):
                 return program
         raise Exception('No program found')
-
-def get_program_title(channel):
-    title = ""
-    try:
-        prog = tv.get_current_program(channel)
-        title = prog['titel']
-        # log("Nu op nederland 1: " + prog['titel'] + "\nvan: " + prog['datum_start'] + "\ntot: " + prog['datum_end'])
-    except KeyError:
-        log("Channel %s not found" %channel)
-    except  Exception as e:
-        log("Error obtaining the program on channel %s. %s" % (channel, e))
-    return title
-
-
-
-tv = info123()
-
-try:
-    tv.update()
-except Exception as e:
-    log("Unable to connect to the server. %s" %e)
-
-print(get_program_title("1"))
-print(get_program_title("2"))
-print(get_program_title("3"))
