@@ -8,13 +8,19 @@ except ImportError:
     from urllib2 import urlopen             # Fall back to Python 2's urllib2
 
 class info123:
-    def __init__(self, channelstring = "1,2,3"):
+    def __init__(self, channelstring = "1,2,3", enable_caching = True):
         self.data = []
         self.json_url = "http://www.tvgids.nl/json/lists/programs.php?channels=%s" %channelstring
+        self.cache_filename = "cache.json"
 
-    def update(self):
-        response = urlopen(self.json_url)     #TODO create something with a timeout
-        self.data = json.loads(response.read())
+    def update(self, enable_caching = True):
+        if enable_caching == True and self.json_read_file():
+            return  #data successfully read from file
+        response = urlopen(self.json_url)       # TODO create something with a timeout
+        json_data = response.read()
+        if enable_caching:
+            self.json_write_file(json_data)         # write the data to a file
+        self.data = json.loads(json_data)
 
     def get_current_program(self, channel):
         return self.get_program(datetime.datetime.now(), channel)
@@ -41,3 +47,19 @@ class info123:
             if (datetime_start <= datetime_prog and datetime_prog <= datetime_stop):
                 return program
         raise Exception('No program found')
+
+    def json_write_file(self, data):
+        f = open(self.cache_filename, 'w')
+        f.write(data)
+        f.close()
+
+    def json_read_file(self):
+        try:
+            f = open(self.cache_filename, 'r')
+            json_data = f.read()
+            f.close()
+            self.data = json.loads(json_data)
+            self.get_current_program("1")        # check the date (will raise an error if the current program is not in it)
+        except:
+            return False    #return false on any Exception (file not found, no channel data, wrong date)
+        return True
