@@ -3,6 +3,7 @@
 import json
 from datetime import datetime
 import time
+import os
 
 try:
     from urllib.request import urlopen      # For Python 3.0 and later
@@ -13,7 +14,7 @@ class info123:
     def __init__(self, channelstring = "1,2,3"):
         self.data = []
         self.json_url = "http://www.tvgids.nl/json/lists/programs.php?channels=%s" %channelstring
-        self.cache_filename = "cache.json"
+        self.cache_filename = os.path.expanduser('~') + "/.cache/cache_info123.json"
 
     def update(self, enable_caching = True):
         if enable_caching == True and self.json_read_file():
